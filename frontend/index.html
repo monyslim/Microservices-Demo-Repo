@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Docker Networking</title>
+</head>
+<body>
+    <h1>Frontend</h1>
+    <div id="output">Loading...</div>
+
+    <script>
+        fetch("/api")
+          .then(res => res.json())
+          .then(data =>{
+            document.getElementById("output").innerText = data.message + " (" + data.time + ")";
+          })
+          .catch(err => {
+            document.getElementById("output").innerText = "Error: " + err;
+          });
+    </script>
+</body>
+</html>
