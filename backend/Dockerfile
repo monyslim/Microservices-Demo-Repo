@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-WORKDIR /app/flaskAPI
+WORKDIR /app/flaskAPI/
 
 COPY app.py .
 
