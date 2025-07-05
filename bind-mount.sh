@@ -21,7 +21,7 @@ docker build -t flask-frontend:1.0.0 ./frontend
 # Run backend container with proper bind-mount path
 docker run -d --name flask-backend \
     --network flask-API \
-    -v "$(pwd)/backend/logs/output.txt:/app/flaskAPI/logs/output.txt" \
+    -v "$(pwd)/backend/logs:/app/flaskAPI/logs" \
     flask-backend:1.0.0
 
 # Run frontend container with port exposed to host
