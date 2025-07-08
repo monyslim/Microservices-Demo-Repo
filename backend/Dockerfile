@@ -4,7 +4,9 @@ WORKDIR /app/flaskAPI/
 
 COPY app.py .
 
-RUN pip install flask
+RUN pip3 install flask
+
+RUN pip3 install mysql-connector-python
 
 RUN apt-get update
 

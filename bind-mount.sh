@@ -1,31 +1,49 @@
 #!/bin/bash
 
-# Clean up any existing containers and network
-docker rm -f flask-frontend flask-backend 2>/dev/null
+# ✅ Load environment variables from .env for use in this script
+set -a
+source .env
+set +a
+
+echo "🧹 Cleaning up old containers and network..."
+docker rm -f flask-frontend flask-backend mysql-db 2>/dev/null
 docker network rm flask-API 2>/dev/null
 docker rmi flask-frontend:1.0.0 flask-backend:1.0.0 2>/dev/null
 
-# Prepare logs directory and file on the host
+echo "📁 Preparing logs directory..."
 mkdir -p "./backend/logs"
 touch "./backend/logs/output.txt"
 
-# Create Docker network for frontend-backend communication
+echo "🌐 Creating Docker network..."
 docker network create flask-API
 
-# Build backend image
-docker build -t flask-backend:1.0.0 ./backend
+echo "🐳 Starting MySQL container..."
+docker run -d --name mysql-db \
+  --network flask-API \
+  -e MYSQL_ROOT_PASSWORD="$MYSQL_ROOT_PASSWORD" \
+  -e MYSQL_DATABASE="$DB_NAME" \
+  -e MYSQL_USER="$DB_USER" \
+  -e MYSQL_PASSWORD="$DB_PASSWORD" \
+  -v mysql-data:/var/lib/mysql \
+  mysql:8
 
-# Build frontend image
-docker build -t flask-frontend:1.0.0 ./frontend
+echo "🐳 Building backend image..."
+docker build --no-cache -t flask-backend:1.0.0 ./backend
 
-# Run backend container with proper bind-mount path
+echo "🚀 Running backend container..."
 docker run -d --name flask-backend \
-    --network flask-API \
-    -v "$(pwd)/backend/logs:/app/flaskAPI/logs" \
-    flask-backend:1.0.0
+  --network flask-API \
+  -v "$(pwd)/backend/logs:/app/flaskAPI/logs" \
+  --env-file .env \
+  flask-backend:1.0.0
+    
+echo "🌐 Building frontend image..."
+docker build --no-cache -t flask-frontend:1.0.0 ./frontend
 
-# Run frontend container with port exposed to host
+echo "🚀 Running frontend container..."
 docker run -d --name flask-frontend \
-    -p 800:80 \
-    --network flask-API \
-    flask-frontend:1.0.0
+  -p 800:80 \
+  --network flask-API \
+  flask-frontend:1.0.0
+
+echo "✅ All containers are up!"

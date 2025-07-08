@@ -1,0 +1,48 @@
+services: # This creates the docker containers
+  mysql: # This is the name of the container you want to create
+    image: mysql:8
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - flask-API
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: flask-backend
+    volumes:
+      - ./backend/logs:/app/flaskAPI/logs
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - mysql
+    networks:
+      - flask-API
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    # container_name: flask-frontend
+    ports:
+      - "800-802:80"
+    depends_on:
+      - backend
+    networks:
+      - flask-API
+    restart: unless-stopped
+
+networks:
+  flask-API:
+
+volumes:
+  mysql-data:
